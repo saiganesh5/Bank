@@ -6,3 +6,5 @@ opencv-python
 pillow
 pytesseract
 waitress
+gunicorn
+
