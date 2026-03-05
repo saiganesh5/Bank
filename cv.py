@@ -2,8 +2,12 @@ import cv2
 import pytesseract
 import numpy as np
 import re
+import shutil
 from pytesseract import Output
 from difflib import SequenceMatcher
+
+if shutil.which("tesseract"):
+    pytesseract.pytesseract.tesseract_cmd = "tesseract"
 
 
 
@@ -393,4 +397,5 @@ if __name__ == "__main__":
             print(f"\nERROR on {image_path}: {e}")
 
     print("\n" + "=" * 55)
+
 
