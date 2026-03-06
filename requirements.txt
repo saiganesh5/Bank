@@ -5,7 +5,7 @@ scikit-learn
 opencv-python-headless
 pillow
 pytesseract
-waitress
 gunicorn
+
 
 
