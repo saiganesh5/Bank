@@ -6,6 +6,6 @@ opencv-python-headless
 pillow
 pytesseract
 gunicorn
-
+flask-cors
 
 
