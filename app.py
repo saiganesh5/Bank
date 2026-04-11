@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import numpy as np
 import pickle
 import os
@@ -11,6 +12,7 @@ from cv import extract_aligned_kyc_features
 # -------------------------------------------------
 
 app = Flask(__name__)
+CORS(app)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -131,15 +133,11 @@ def predict_ui():
         **kyc_features
     }
 
-    return render_template("index.html", result=result)
+    return jsonify(result)
 
 # -------------------------------------------------
 # RUN SERVER
-# ------------------------------------------------
+# -------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug= True)
-
-
-
-
+    app.run(host="0.0.0.0", port=5000)
