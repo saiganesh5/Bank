@@ -803,7 +803,7 @@
         </header>
 
         <!-- ===== MAIN CONTENT ===== -->
-        <form method="post" action="https://65.1.87.228:5000/predict_ui" enctype="multipart/form-data" id="riskForm">
+        <form id="riskForm">
             <div class="main-grid">
 
                 <!-- ===== LEFT: INPUT FORM ===== -->
@@ -993,75 +993,8 @@
                     </div>
 
                     <div class="card-body">
-                        {% if result %}
-                        <!-- RESULTS VIEW -->
-                        <div class="risk-gauge-container" style="animation: scoreReveal 0.5s ease forwards;">
-                            <div class="risk-gauge">
-                                <svg viewBox="0 0 180 100">
-                                    <defs>
-                                        <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="0%" stop-color="#34d399" />
-                                            <stop offset="50%" stop-color="#fbbf24" />
-                                            <stop offset="100%" stop-color="#f87171" />
-                                        </linearGradient>
-                                    </defs>
-                                    <!-- Track -->
-                                    <path d="M20 90 A70 70 0 0 1 160 90" fill="none" stroke="rgba(255,255,255,0.06)"
-                                        stroke-width="10" stroke-linecap="round" />
-                                    <!-- Value arc — width set by server value -->
-                                    <path d="M20 90 A70 70 0 0 1 160 90" fill="none" stroke="url(#gaugeGrad)"
-                                        stroke-width="10" stroke-linecap="round" stroke-dasharray="220"
-                                        stroke-dashoffset="{{ 220 - (result.freeze_risk_score * 220) }}" />
-                                </svg>
-                                <div class="score-value">
-                                    {{ (result.freeze_risk_score * 100)|round(1) }}<small>%</small>
-                                </div>
-                            </div>
-
-                            {% if result.freeze_risk_score < 0.3 %} <span class="risk-label low">Low Risk</span>
-                                {% elif result.freeze_risk_score < 0.7 %} <span class="risk-label medium">Medium
-                                    Risk</span>
-                                    {% else %}
-                                    <span class="risk-label high">High Risk</span>
-                                    {% endif %}
-                        </div>
-
-                        <div class="score-details" style="animation: scoreReveal 0.5s ease 0.15s forwards; opacity: 0;">
-                            <div class="score-row">
-                                <span class="label"><span class="dot"
-                                        style="background: var(--accent-blue);"></span>Transaction Risk</span>
-                                <span class="value">{{ (result.transaction_risk_score * 100)|round(1) }}%</span>
-                            </div>
-                            <div class="score-row">
-                                <span class="label"><span class="dot"
-                                        style="background: var(--accent-amber);"></span>KYC Risk</span>
-                                <span class="value">{{ (result.kyc_risk_score * 100)|round(1) }}%</span>
-                            </div>
-                            <div class="score-row">
-                                <span class="label"><span class="dot" style="background: var(--accent-red);"></span>Name
-                                    Mismatch</span>
-                                <span
-                                    class="value {% if result.name_mismatch_flag %}flag-true{% else %}flag-false{% endif %}">
-                                    {{ 'Yes' if result.name_mismatch_flag else 'No' }}
-                                </span>
-                            </div>
-                            <div class="score-row">
-                                <span class="label"><span class="dot"
-                                        style="background: var(--accent-amber);"></span>Invalid ID Format</span>
-                                <span
-                                    class="value {% if result.invalid_id_format_flag %}flag-true{% else %}flag-false{% endif %}">
-                                    {{ 'Yes' if result.invalid_id_format_flag else 'No' }}
-                                </span>
-                            </div>
-                            <div class="score-row">
-                                <span class="label"><span class="dot"
-                                        style="background: var(--accent-green);"></span>OCR Confidence</span>
-                                <span class="value">{{ (result.ocr_confidence * 100)|round(1) }}%</span>
-                            </div>
-                        </div>
-                        {% else %}
                         <!-- PLACEHOLDER VIEW -->
-                        <div class="sidebar-placeholder">
+                        <div class="sidebar-placeholder" id="placeholderView">
                             <svg viewBox="0 0 24 24">
                                 <path
                                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
@@ -1070,7 +1003,53 @@
                             <p>Fill in the transaction details and upload a KYC document to generate a freeze risk
                                 assessment.</p>
                         </div>
-                        {% endif %}
+                        <!-- RESULTS VIEW -->
+                        <div id="resultsView" style="display: none;">
+                            <div class="risk-gauge-container" style="animation: scoreReveal 0.5s ease forwards;">
+                                <div class="risk-gauge">
+                                    <svg viewBox="0 0 180 100">
+                                        <defs>
+                                            <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#34d399" />
+                                                <stop offset="50%" stop-color="#fbbf24" />
+                                                <stop offset="100%" stop-color="#f87171" />
+                                            </linearGradient>
+                                        </defs>
+                                        <!-- Track -->
+                                        <path d="M20 90 A70 70 0 0 1 160 90" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10" stroke-linecap="round" />
+                                        <!-- Value arc -->
+                                        <path id="gaugeArc" d="M20 90 A70 70 0 0 1 160 90" fill="none" stroke="url(#gaugeGrad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="220" />
+                                    </svg>
+                                    <div class="score-value">
+                                        <span id="scoreText">0</span><small>%</small>
+                                    </div>
+                                </div>
+                                <span id="riskLabel" class="risk-label"></span>
+                            </div>
+
+                            <div class="score-details" style="animation: scoreReveal 0.5s ease 0.15s forwards; opacity: 0;">
+                                <div class="score-row">
+                                    <span class="label"><span class="dot" style="background: var(--accent-blue);"></span>Transaction Risk</span>
+                                    <span class="value" id="txnRiskVal">0%</span>
+                                </div>
+                                <div class="score-row">
+                                    <span class="label"><span class="dot" style="background: var(--accent-amber);"></span>KYC Risk</span>
+                                    <span class="value" id="kycRiskVal">0%</span>
+                                </div>
+                                <div class="score-row">
+                                    <span class="label"><span class="dot" style="background: var(--accent-red);"></span>Name Mismatch</span>
+                                    <span class="value" id="nameMismatchVal">No</span>
+                                </div>
+                                <div class="score-row">
+                                    <span class="label"><span class="dot" style="background: var(--accent-amber);"></span>Invalid ID Format</span>
+                                    <span class="value" id="invalidIdVal">No</span>
+                                </div>
+                                <div class="score-row">
+                                    <span class="label"><span class="dot" style="background: var(--accent-green);"></span>OCR Confidence</span>
+                                    <span class="value" id="ocrConfVal">0%</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1203,8 +1182,60 @@
             const form = document.getElementById('riskForm');
             const submitBtn = document.getElementById('submitBtn');
 
-            form.addEventListener('submit', () => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
                 submitBtn.classList.add('loading');
+                
+                try {
+                    const formData = new FormData(form);
+                    // Use relative path since it's same origin locally, but on Render, 
+                    // you will need to replace this URL with your AWS Endpoint:
+                    // 'http://<AWS_IP>:5000/predict_ui'
+                    const backendUrl = '/predict_ui';
+                    const response = await fetch(backendUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    
+                    document.getElementById('placeholderView').style.display = 'none';
+                    document.getElementById('resultsView').style.display = 'block';
+                    
+                    const freezeRisk = result.freeze_risk_score;
+                    document.getElementById('scoreText').innerText = (freezeRisk * 100).toFixed(1);
+                    document.getElementById('gaugeArc').style.strokeDashoffset = 220 - (freezeRisk * 220);
+                    
+                    const riskLabel = document.getElementById('riskLabel');
+                    if (freezeRisk < 0.3) {
+                        riskLabel.className = 'risk-label low';
+                        riskLabel.innerText = 'Low Risk';
+                    } else if (freezeRisk < 0.7) {
+                        riskLabel.className = 'risk-label medium';
+                        riskLabel.innerText = 'Medium Risk';
+                    } else {
+                        riskLabel.className = 'risk-label high';
+                        riskLabel.innerText = 'High Risk';
+                    }
+                    
+                    document.getElementById('txnRiskVal').innerText = (result.transaction_risk_score * 100).toFixed(1) + '%';
+                    document.getElementById('kycRiskVal').innerText = (result.kyc_risk_score * 100).toFixed(1) + '%';
+                    
+                    const nameVal = document.getElementById('nameMismatchVal');
+                    nameVal.innerText = result.name_mismatch_flag ? 'Yes' : 'No';
+                    nameVal.className = 'value ' + (result.name_mismatch_flag ? 'flag-true' : 'flag-false');
+                    
+                    const idVal = document.getElementById('invalidIdVal');
+                    idVal.innerText = result.invalid_id_format_flag ? 'Yes' : 'No';
+                    idVal.className = 'value ' + (result.invalid_id_format_flag ? 'flag-true' : 'flag-false');
+                    
+                    document.getElementById('ocrConfVal').innerText = (result.ocr_confidence * 100).toFixed(1) + '%';
+                    
+                } catch (err) {
+                    console.error(err);
+                    alert("Error communicating with backend.");
+                } finally {
+                    submitBtn.classList.remove('loading');
+                }
             });
 
             // ===== Smooth number input scroll prevention =====
