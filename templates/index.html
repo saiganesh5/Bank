@@ -1191,7 +1191,7 @@
                     // Use relative path since it's same origin locally, but on Render, 
                     // you will need to replace this URL with your AWS Endpoint:
                     // 'http://<AWS_IP>:5000/predict_ui'
-                    const backendUrl = '/predict_ui';
+                    const backendUrl = 'http://65.1.87.228:5000/predict_ui';
                     const response = await fetch(backendUrl, {
                         method: 'POST',
                         body: formData
