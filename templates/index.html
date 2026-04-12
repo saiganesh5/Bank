@@ -1189,9 +1189,8 @@
                 try {
                     const formData = new FormData(form);
                     // Use relative path since it's same origin locally, but on Render, 
-                    // you will need to replace this URL with your AWS Endpoint:
-                    // 'http://<AWS_IP>:5000/predict_ui'
-                    const backendUrl = 'https://bank-account-freeze-predicition.onrender.com/predict_ui';
+                    // Use relative path so it works everywhere (Local, Render, etc.)
+                    const backendUrl = '/predict_ui';
                     const response = await fetch(backendUrl, {
                         method: 'POST',
                         body: formData
