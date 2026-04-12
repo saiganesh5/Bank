@@ -7,5 +7,5 @@ pillow
 pytesseract
 gunicorn
 flask-cors
-
+scikit-learn==1.8.0
 
